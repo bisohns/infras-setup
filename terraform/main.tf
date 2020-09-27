@@ -38,6 +38,7 @@ module "web_service_sg" {
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["https-443-tcp", "ssh-tcp", "http-80-tcp"]
+  egress_rules        = ["all-all"]
 
   tags = local.common_tags
 }
@@ -59,4 +60,38 @@ module "ec2" {
 
   volume_tags = local.common_tags
   tags        = local.common_tags
+}
+
+# TODO Wait for Namecheap provider to be deployed to terraform registry for terraform 13+ and implement this function
+# https://github.com/adamdecaf/terraform-provider-namecheap
+#// DNS Configuration
+#// Add/Update Namecheap domain with ec2 IP address
+#resource "namecheap_record" "www-domain" {
+#  name    = "www"
+#  domain  = var.domain_name
+#  address = "https://${domain_name}"
+#  mx_pref = 10
+#  type    = "URL Redirect"
+#}
+
+#resource "namecheap_record" "apex-domain" {
+#  name    = "@"
+#  domain  = var.domain_name
+#  address = module.ec2.public_ip[0]
+#  mx_pref = 10
+#  type    = "A"
+#}
+
+
+resource null_resource "config-server-ansible" {
+  provisioner "local-exec" {
+    working_dir = "../ansible"
+    environment = {
+      ANSIBLE_HOST_KEY_CHECKING = "False"
+    }
+    command = <<CMD
+      sleep 60
+      ansible-playbook -u ubuntu --private-key ../terraform/gophie-private-key.pem  -i '${module.ec2.public_ip[0]},' main.yml
+    CMD
+  }
 }

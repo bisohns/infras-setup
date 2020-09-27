@@ -17,3 +17,8 @@ variable "subnet_id" {
 variable "region" {
   default = "eu-west-2"
 }
+
+variable "domain_name" {
+  default     = "gophie.cam"
+  description = "domain name to update in A record for on Namecheap"
+}
