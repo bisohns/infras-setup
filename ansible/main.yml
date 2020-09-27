@@ -1,0 +1,105 @@
+---
+- hosts: all
+  become: yes
+
+  vars:
+    gophie_web_path: "/home/ubuntu/gophie"
+    gophie_web_port: 3000
+    nodejs_install_npm_user: ubuntu
+    npm_config_prefix: "/usr/local/lib/npm"
+    certbot_admin_email: diretnandomnan@gmail.com
+
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=yes cache_valid_time=3600
+
+    - name: Install packages
+      apt:
+        state: present
+        pkg:
+          - cron
+          - git
+
+  tasks:
+    - name: Install NodeJS.
+      include_role:
+        name: geerlingguy.nodejs
+      vars:
+        nodejs_version: "13.x"
+        nodejs_npm_global_packages:
+          - yarn
+
+    - name: Clone Master Gophie Web Repo.
+      become: no
+      git:
+        depth: 1
+        dest: "{{ gophie_web_path }}"
+        repo: https://github.com/go-phie/gophie-web.git
+        force: yes
+
+    - name: Build Code using Yarn.
+      become: no
+      shell:
+        chdir: "{{ gophie_web_path }}"
+        cmd: |
+          "{{npm_config_prefix}}"/bin/yarn
+
+    - name: Setup pm2 and start app.
+      include_role:
+        name: pm2
+      vars:
+         pm2_apps:
+           - run: server.js
+             args: --name gophie-web
+             path: "{{ gophie_web_path }}"
+             cmd: startOrGracefulReload
+         pm2_apps_default_env:
+           NODE_ENV: production
+           PORT: "{{ gophie_web_port }}"
+         pm2_service_name: pm2-root
+
+    - name: Install Nginx.
+      include_role:
+        name: geerlingguy.nginx
+      vars:
+        nginx_vhosts:
+          - listen: "443 ssl http2"
+            server_name: "gophie.cam"
+            state: "present"
+            template: "{{ nginx_vhost_template }}"
+            filename: "gophie.cam.conf"
+            extra_parameters: |
+              ssl_certificate     /etc/letsencrypt/live/gophie.cam/fullchain.pem;
+              ssl_certificate_key /etc/letsencrypt/live/gophie.cam/privkey.pem;
+              ssl_protocols       tlsv1.1 tlsv1.2;
+              location / {
+                proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+                proxy_set_header x-real-ip $remote_addr;
+                proxy_set_header host $http_host;
+
+                proxy_http_version 1.1;
+                proxy_set_header upgrade $http_upgrade;
+                proxy_set_header connection "upgrade";
+
+                proxy_pass "http://localhost:{{ gophie_web_port }}/";
+                proxy_redirect off;
+                proxy_read_timeout 240s;
+              }
+
+          - listen: "80"
+            server_name: "gophie.cam www.gophie.cam"
+            return: "301 https://gophie.cam$request_uri"
+            filename: "gophie.cam.80.conf"
+
+
+    - name:  Install Certbot.
+      include_role:
+        name: geerlingguy.certbot
+      vars:
+        certbot_auto_renew_user: "ubuntu"
+        certbot_create_if_missing: true
+        certbot_auto_renew_minute: "20"
+        certbot_auto_renew_hour: "5"
+        certbot_certs:
+          - domains:
+            - gophie.cam

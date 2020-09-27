@@ -1,0 +1,31 @@
+---
+
+- hosts: all
+  become: yes
+  roles:
+    - weareinteractive.pm2
+  vars:
+    # For vagrant
+    #pm2_upstart: yes
+    #pm2_user: vagrant
+    #pm2_service_name: pm2-vagrant
+    # For docker
+    pm2_user: root
+    pm2_upstart: no # no service support within docker
+    # Common
+    pm2_cmds:
+      - run: delete
+        args: console_error
+        ignore_errors: yes
+    pm2_apps:
+      - run: apps.json
+        path: "/etc/ansible/roles/weareinteractive.pm2/tests"
+        cmd: startOrGracefulReload
+      - run: console_error.js
+        args: --name console_error
+        path: "/etc/ansible/roles/weareinteractive.pm2/tests/apps"
+        cmd: start
+        env:
+          NODE_ENV: dev
+    pm2_apps_default_env:
+      NODE_ENV: production

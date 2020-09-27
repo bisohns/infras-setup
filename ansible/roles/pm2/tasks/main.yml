@@ -1,0 +1,22 @@
+---
+
+- import_tasks: install.yml
+  tags:
+    - web
+    - pm2
+    - install
+    - pm2-install
+
+- import_tasks: manage.yml
+  tags:
+    - web
+    - pm2
+    - manage
+    - pm2-manage
+
+- import_tasks: service.yml
+  tags:
+    - web
+    - pm2
+    - service
+    - pm2-service

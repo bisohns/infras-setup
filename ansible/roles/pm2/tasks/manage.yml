@@ -1,0 +1,36 @@
+---
+
+- name: Executing commands
+  become_user: "{{ pm2_user }}"
+  become: yes
+  environment: "{{ item.env | default(pm2_cmds_default_env) }}"
+  shell: "pm2 {{ item.run }} {{ item.args | default() }}"
+  register: pm2_cmds_result
+  args:
+    chdir: "{{ item.path | default(omit) }}"
+  failed_when: "item.ignore_errors|default(false) == false and ('[ERROR]' in pm2_cmds_result.stderr)"
+  # ignore_errors: "item.ignore_errors|default(false)" this doesn't work!?
+  with_items: "{{ pm2_cmds }}"
+
+- name: Managing apps
+  become_user: "{{ pm2_user }}"
+  become: yes
+  environment: "{{ item.env | default(pm2_apps_default_env) }}"
+  shell: "pm2 {{ item.cmd | default(pm2_apps_default_cmd) }} {{ item.run }} {{ item.args | default() }}"
+  register: pm2_apps_result
+  args:
+    chdir: "{{ item.path | default(omit) }}"
+  failed_when: "pm2_apps_result.stderr is defined and pm2_apps_result.stderr.find('[ERROR]') != -1"
+  with_items: "{{ pm2_apps }}"
+
+- name: Executing post commands
+  become_user: "{{ pm2_user }}"
+  become: yes
+  environment: "{{ item.env | default(pm2_post_cmds_default_env) }}"
+  shell: "pm2 {{ item.run }} {{ item.args | default() }}"
+  register: pm2_post_cmds_result
+  args:
+    chdir: "{{ item.path | default(omit) }}"
+  failed_when: "item.ignore_errors|default(false) == false and ('[ERROR]' in pm2_post_cmds_result.stderr)"
+  # ignore_errors: "item.ignore_errors|default(false)" this doesn't work!?
+  with_items: "{{ pm2_post_cmds }}"
