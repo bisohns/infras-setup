@@ -84,6 +84,9 @@ module "ec2" {
 
 
 resource null_resource "config-server-ansible" {
+  triggers = {
+    "src_hash" = "${data.archive_file.ansible_dir.output_sha}" # track changes in the ansible dir
+  }
   provisioner "local-exec" {
     working_dir = "../ansible"
     environment = {

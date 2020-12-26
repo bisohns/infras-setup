@@ -33,3 +33,5 @@ override.tf.json
 
 # Private Keys
 *.pem
+
+.ansible.zip
