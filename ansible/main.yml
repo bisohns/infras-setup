@@ -28,6 +28,14 @@
         nodejs_version: "14.x"
         nodejs_npm_global_packages:
           - yarn
+    
+    - name: Create Yarn symbolic link
+      file:
+        src: "{{npm_config_prefix}}/bin/yarn"
+        dest: /usr/bin/yarn
+        owner: "{{ nodejs_install_npm_user }}"
+        group: "{{ nodejs_install_npm_user }}"
+        state: link
 
     - name: Clone Master Gophie Web Repo.
       become: no
@@ -42,7 +50,7 @@
       shell:
         chdir: "{{ gophie_web_path }}"
         cmd: |
-          "{{npm_config_prefix}}"/bin/yarn
+          /usr/bin/yarn
 
     - name: Setup pm2 and start app.
       include_role:

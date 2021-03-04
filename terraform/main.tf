@@ -1,9 +1,16 @@
 locals {
   common_tags = {
-    Terraform   = "true"
     Environment = "production"
     Project     = var.project
+    ManagedBy = "Terraform"
   }
+}
+
+
+module "remote_state_locking" {
+  source   = "../modules/terraform-aws-remote-state"
+  use_lock = false
+  name_prefix = "gophie-terraform-state"
 }
 
 // Generate Key Pair
@@ -84,6 +91,9 @@ module "ec2" {
 
 
 resource null_resource "config-server-ansible" {
+  triggers = {
+    "src_hash" = "${data.archive_file.ansible_dir.output_sha}" # track changes in the ansible dir
+  }
   provisioner "local-exec" {
     working_dir = "../ansible"
     environment = {
