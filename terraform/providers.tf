@@ -12,12 +12,3 @@ terraform {
 provider "aws" {
   region = var.region
 }
-
-#// Configure Namecheap Provider
-#provider "namecheap" {
-#  username    = "your_username"
-#  api_user    = "your_username" # Same as username
-#  token       = "your_token"
-#  ip          = "your.ip.address.here"
-#  use_sandbox = false # Toggle for testing/sandbox mode
-#}

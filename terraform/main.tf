@@ -1,9 +1,16 @@
 locals {
   common_tags = {
-    Terraform   = "true"
     Environment = "production"
     Project     = var.project
+    ManagedBy = "Terraform"
   }
+}
+
+
+module "remote_state_locking" {
+  source   = "../modules/terraform-aws-remote-state"
+  use_lock = false
+  name_prefix = "gophie-terraform-state"
 }
 
 // Generate Key Pair
