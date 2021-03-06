@@ -1,23 +1,22 @@
-// Configure the GCP Provider
-provider "google" {
-  project = var.mythra_id
-  region  = var.mythra_region
-  zone    = var.mythra_zone
-}
-
 locals {
-  m_common_tags = {
+  common_labels = {
     Environment = "production"
     Project     = var.mythra_project
-    ManagedBy = "Terraform"
+    ManagedBy   = "Terraform"
   }
+}
+
+// Mythra IP Address
+resource "google_compute_address" "static" {
+  name   = "${var.mythra_project}-ipv4-address"
 }
 
 // Mythra Compute Engine Instance
 resource "google_compute_instance" "vm_instance" {
-  name         = "${var.mythra_project}-gcp"
+  count        = 1
+  name         = "${var.mythra_project}-ce"
   machine_type = "f1-micro"
-  tags = locals.m_common_tags
+  labels       = local.common_labels
 
   boot_disk {
     initialize_params {
@@ -25,16 +24,30 @@ resource "google_compute_instance" "vm_instance" {
     }
   }
 
+  metadata = {
+    ssh-keys = "gcp:${tls_private_key.this.public_key_openssh}"
+  }
+
   network_interface {
-    network = google_compute_network.vpc_network.self_link
+    network = "default"
     access_config {
+      nat_ip = google_compute_address.static.address
     }
   }
 }
 
-// Mythra VPC Network
-resource "google_compute_network" "vpc_network" {
-  name                    = "${var.mythra_project}-terraform-network"
-  auto_create_subnetworks = "true"
-  tags = locals.m_common_tags
+resource null_resource "config-mythra-server-ansible" {
+  triggers = {
+    "src_hash" = data.archive_file.ansible_dir.output_sha # track changes in the ansible dir
+  }
+  provisioner "local-exec" {
+    working_dir = "../ansible"
+    environment = {
+      ANSIBLE_HOST_KEY_CHECKING = "False"
+    }
+    command = <<CMD
+      sleep 60
+      ansible-playbook -u gcp --private-key ../terraform/gophie-private-key.pem  -i '${google_compute_address.static.address},' mythra.yml
+    CMD
+  }
 }

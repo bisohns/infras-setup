@@ -90,7 +90,7 @@ module "ec2" {
 #}
 
 
-resource null_resource "config-server-ansible" {
+resource null_resource "config-frontend-server-ansible" {
   triggers = {
     "src_hash" = data.archive_file.ansible_dir.output_sha # track changes in the ansible dir
   }

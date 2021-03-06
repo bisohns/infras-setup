@@ -3,7 +3,7 @@
   become: yes
 
   vars:
-    mythra_web_path: "/home/ubuntu/gophie"
+    mythra_web_path: "/home/gcp/mythra"
     mythra_web_port: 9000
 
   pre_tasks:
@@ -55,5 +55,7 @@
       shell:
         chdir: "{{ mythra_web_path }}"
         cmd: |
+          lsof -ti tcp:"{{ mythra_web_port}}" | xargs kill -9
+          lsof -ti tcp:4444 | xargs kill -9
           chromedriver --port=4444 --log-level=DEBUG &
           ./target/debug/mythra api --port "{{ mythra_web_port }}" --verbose debug

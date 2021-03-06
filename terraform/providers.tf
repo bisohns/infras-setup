@@ -17,3 +17,9 @@ provider "aws" {
   region = var.region
 }
 
+# Configure the GCP Provider
+provider "google" {
+  project = var.mythra_id
+  region  = var.mythra_region
+  zone    = var.mythra_zone
+}
