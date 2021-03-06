@@ -1,0 +1,20 @@
+---
+- name: get google key
+  become: yes
+  apt_key:
+    url: "https://dl-ssl.google.com/linux/linux_signing_key.pub"
+    state: present
+
+- name: add gogle repository
+  become: yes
+  command: sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+
+- name: update apt
+  become: yes
+  apt: update_cache=yes
+
+- name: install google-chrome
+  become: yes
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - google-chrome-stable

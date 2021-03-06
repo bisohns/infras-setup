@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 3.0"
     }
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 3.58.0"
+    }
   }
 }
 
@@ -12,3 +16,4 @@ terraform {
 provider "aws" {
   region = var.region
 }
+

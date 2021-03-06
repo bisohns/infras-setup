@@ -22,3 +22,20 @@ variable "domain_name" {
   default     = "gophie.cam"
   description = "domain name to update in A record for on Namecheap"
 }
+
+variable "mythra_project" {
+  default = "mythra"
+}
+
+variable "mythra_id" {
+  default = "psyched-myth-306812"
+  description = "Mythra Google Cloud Project ID"
+}
+
+variable "mythra_region" {
+  default = "us-central1"
+}
+
+variable "mythra_zone" {
+  default = "us-central1-c"
+}

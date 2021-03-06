@@ -92,7 +92,7 @@ module "ec2" {
 
 resource null_resource "config-server-ansible" {
   triggers = {
-    "src_hash" = "${data.archive_file.ansible_dir.output_sha}" # track changes in the ansible dir
+    "src_hash" = data.archive_file.ansible_dir.output_sha # track changes in the ansible dir
   }
   provisioner "local-exec" {
     working_dir = "../ansible"
@@ -101,7 +101,7 @@ resource null_resource "config-server-ansible" {
     }
     command = <<CMD
       sleep 60
-      ansible-playbook -u ubuntu --private-key ../terraform/gophie-private-key.pem  -i '${module.ec2.public_ip[0]},' main.yml
+      ansible-playbook -u ubuntu --private-key ../terraform/gophie-private-key.pem  -i '${module.ec2.public_ip[0]},' frontend.yml
     CMD
   }
 }

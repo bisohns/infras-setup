@@ -1,0 +1,59 @@
+---
+- hosts: all
+  become: yes
+
+  vars:
+    mythra_web_path: "/home/ubuntu/gophie"
+    mythra_web_port: 9000
+
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=yes cache_valid_time=3600
+
+    - name: Install packages
+      apt:
+        state: present
+        pkg:
+          - libncursesw5-dev 
+          - libssl-dev
+          - git
+
+  tasks:
+    - name: Install ChromeDriver
+      include_role:
+        name: chromedriver
+
+    - name: Install Headless Chrome
+      include_role:
+        name: chrome
+
+    - name: Install Rust
+      include_role:
+        name: fubarhouse.rust
+      vars:
+        rust_version: "1.49.0"
+      shell_profiles:
+      - .bash_profile
+
+    - name: Clone Master Mythra Web Repo.
+      become: no
+      git:
+        depth: 1
+        dest: "{{ mythra_web_path }}"
+        repo: https://github.com/deven96/mythra.git
+        force: yes
+
+    - name: Build Code using Cargo.
+      become: no
+      shell:
+        chdir: "{{ mythra_web_path }}"
+        cmd: |
+          cargo build
+
+    - name: Start ChromeDriver and app
+      become: no
+      shell:
+        chdir: "{{ mythra_web_path }}"
+        cmd: |
+          chromedriver --port=4444 --log-level=DEBUG &
+          ./target/debug/mythra api --port "{{ mythra_web_port }}" --verbose debug
