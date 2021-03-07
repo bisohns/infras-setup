@@ -13,10 +13,7 @@
     - name: Install packages
       apt:
         state: present
-        pkg:
-          - libncursesw5-dev 
-          - libssl-dev
-          - git
+        pkg: ['libncursesw5-dev', 'libssl-dev', 'pkg-config', 'git', 'unzip', 'lsof']
 
   tasks:
     - name: Install ChromeDriver
@@ -29,11 +26,11 @@
 
     - name: Install Rust
       include_role:
-        name: fubarhouse.rust
+        name: rust
       vars:
         rust_version: "1.49.0"
-      shell_profiles:
-      - .bash_profile
+        shell_profiles:
+          - .bashrc
 
     - name: Clone Master Mythra Web Repo.
       become: no
@@ -44,18 +41,39 @@
         force: yes
 
     - name: Build Code using Cargo.
-      become: no
       shell:
         chdir: "{{ mythra_web_path }}"
         cmd: |
-          cargo build
+          /root/.cargo/bin/cargo build
 
     - name: Start ChromeDriver and app
-      become: no
       shell:
         chdir: "{{ mythra_web_path }}"
         cmd: |
           lsof -ti tcp:"{{ mythra_web_port}}" | xargs kill -9
           lsof -ti tcp:4444 | xargs kill -9
           chromedriver --port=4444 --log-level=DEBUG &
-          ./target/debug/mythra api --port "{{ mythra_web_port }}" --verbose debug
+          ./target/debug/mythra api --port "{{ mythra_web_port }}" --verbose debug &
+
+    - name: Install Nginx.
+      include_role:
+        name: geerlingguy.nginx
+      vars:
+        nginx_vhosts:
+          - listen: "80"
+            server_name: "_"
+            state: "present"
+            return: "301 https://gophie.cam$request_uri"
+            template: "{{ nginx_vhost_template }}"
+            filename: "mythra.cam.80.conf"
+            extra_parameters: |
+              location / {
+                proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+                proxy_set_header x-real-ip $remote_addr;
+                proxy_set_header host $http_host;
+
+                proxy_http_version 1.1;
+                proxy_pass "http://localhost:{{ mythra_web_port }}/";
+                proxy_redirect off;
+                proxy_read_timeout 240s;
+              }

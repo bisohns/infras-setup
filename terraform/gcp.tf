@@ -1,11 +1,3 @@
-locals {
-  common_labels = {
-    Environment = "production"
-    Project     = var.mythra_project
-    ManagedBy   = "Terraform"
-  }
-}
-
 // Mythra IP Address
 resource "google_compute_address" "static" {
   name   = "${var.mythra_project}-ipv4-address"
@@ -16,7 +8,6 @@ resource "google_compute_instance" "vm_instance" {
   count        = 1
   name         = "${var.mythra_project}-ce"
   machine_type = "f1-micro"
-  labels       = local.common_labels
 
   boot_disk {
     initialize_params {

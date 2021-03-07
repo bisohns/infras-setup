@@ -1,0 +1,98 @@
+---
+# setup tasks file for fubarhouse-rust
+
+- name: "Rust | Look for cURL"
+  shell: which curl
+  register: rust_which_curl
+  changed_when: false
+  failed_when: false
+
+- name: "Rust | Look for gcc"
+  shell: which gcc
+  register: rust_which_gcc
+  changed_when: false
+  failed_when: false
+
+- name: "Rust | Include OS-Specific tasks (CentOS)"
+  include_tasks: tasks-CentOS.yml
+  when:
+    - ansible_distribution == "CentOS"
+    - '"curl" not in rust_which_curl.stdout or "gcc" not in rust_which_gcc.stdout'
+
+- name: "Rust | Include OS-Specific tasks (Debian)"
+  include_tasks: tasks-Debian.yml
+  when:
+    - ansible_os_family == "Debian"
+    - '"curl" not in rust_which_curl.stdout or "gcc" not in rust_which_gcc.stdout'
+
+- name: "Rust | Include OS-Specific tasks (RedHat)"
+  include_tasks: tasks-RedHat.yml
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution != "CentOS"
+    - '"curl" not in rust_which_curl.stdout or "gcc" not in rust_which_gcc.stdout'
+
+- name: "Rust | Define user variable for ssh use"
+  set_fact:
+    fubarhouse_user: "{{ ansible_ssh_user }}"
+  when: ansible_ssh_user is defined and fubarhouse_user is not defined
+
+- name: "Rust | Define user variable for non-ssh use"
+  set_fact:
+    fubarhouse_user: "{{ ansible_user_id }}"
+  when: ansible_ssh_user is not defined and fubarhouse_user is not defined
+
+- name: "Rust | Get $HOME"
+  shell: "echo $HOME"
+  register: shell_home_dir
+  changed_when: false
+  when: fubarhouse_user_dir is not defined
+
+- name: "Rust | Set $HOME"
+  set_fact:
+    fubarhouse_user_dir: "{{ shell_home_dir.stdout }}"
+  when: fubarhouse_user_dir is not defined
+
+- name: "Rust | Define shell exports"
+  set_fact:
+    shell_exports:
+      - regex: 'export PATH="\$PATH:{{ fubarhouse_user_dir }}/.cargo/bin"'
+        lineinfile: 'export PATH="$PATH:{{ fubarhouse_user_dir }}/.cargo/bin"'
+  when: shell_exports is not defined
+
+- name: "Rust | Formulate source string comparrison requirements"
+  set_fact:
+    rust_version_requirement: "rustc {{ rust_version }}"
+  when:
+    - build_rust_from_source|bool == true
+    - rust_version_requirement is not defined
+
+- name: "Rust | Formulate installer string comparrison requirements"
+  set_fact:
+    rust_version_requirement: "Usage: rustc"
+  when:
+    - build_rust_from_source|bool == false
+    - rust_version_requirement is not defined
+
+- name: "Rust | Looking for installer installation"
+  shell: "{{ fubarhouse_user_dir }}/.cargo/bin/rustc | cat"
+  register: rust_preinstall_version_r
+  changed_when: false
+  when: build_rust_from_source|bool == false
+
+- name: "Rust | Looking for source installation"
+  shell: "{{ fubarhouse_user_dir }}/.cargo/bin/rustc --version | cat"
+  register: rust_preinstall_version_s
+  changed_when: false
+  when: build_rust_from_source|bool == true
+
+- name: "Rust | Detect configured shell profiles"
+  stat:
+    path: "{{ fubarhouse_user_dir }}/{{ item }}"
+  changed_when: false
+  failed_when: false
+  with_items: "{{ shell_profiles }}"
+  register: stat_shell_profiles
+  when:
+  - shell_profiles is defined
+  - stat_shell_profiles is not defined

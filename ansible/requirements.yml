@@ -3,4 +3,3 @@ roles:
   - name: geerlingguy.certbot
   - name: geerlingguy.nodejs
   - name: geerlingguy.nginx
-  - name: fubarhouse.rust

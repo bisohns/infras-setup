@@ -1,16 +1,15 @@
 ---
-- name: update apt
+- name: Update Apt
   become: yes
   apt: update_cache=yes
 
-- name: install chromedriver dependencies
+- name: Install Chromedriver Dependencies
   become: yes
-  apt: pkg={{ item }} state=latest
-  with_items:
-    - libnss3
-    - libgconf-2-4
+  apt:
+    state: latest
+    pkg: ['libnss3', 'libgconf-2-4']
 
-- name: get chromedriver latest version number
+- name: Get Chromedriver Latest Version Number
   uri:
     url: "{{ chromedriver_version_url }}"
     return_content: yes
@@ -18,7 +17,7 @@
       Content-Type: "text/plain"
   register: latest_chromedriver
 
-- name: download chromedriver
+- name: Download Chromedriver
   become: yes
   unarchive:
     src: "https://chromedriver.storage.googleapis.com/{{ latest_chromedriver.content|trim }}/chromedriver_linux64.zip"
