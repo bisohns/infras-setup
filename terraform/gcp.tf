@@ -37,7 +37,7 @@ resource null_resource "config-mythra-server-ansible" {
       ANSIBLE_HOST_KEY_CHECKING = "False"
     }
     command = <<CMD
-      sleep 60
+#      sleep 60
       ansible-playbook -u gcp --private-key ../terraform/gophie-private-key.pem  -i '${google_compute_address.static.address},' mythra.yml
     CMD
   }

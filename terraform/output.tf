@@ -8,3 +8,8 @@ output "ec2_public_dns" {
   description = "Public DNS of created instances"
 }
 
+output "gce_public_ip" {
+  value       = google_compute_address.static.address
+  description = "IP of mythra instance"
+}
+

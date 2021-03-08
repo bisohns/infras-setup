@@ -13,7 +13,7 @@
     - name: Install packages
       apt:
         state: present
-        pkg: ['libncursesw5-dev', 'libssl-dev', 'pkg-config', 'git', 'unzip', 'lsof']
+        pkg: [ 'libncurses5', 'libncursesw5-dev', 'libssl-dev', 'pkg-config', 'git', 'unzip', 'lsof']
 
   tasks:
     - name: Install ChromeDriver
@@ -24,36 +24,52 @@
       include_role:
         name: chrome
 
-    - name: Install Rust
-      include_role:
-        name: rust
-      vars:
-        rust_version: "1.49.0"
-        shell_profiles:
-          - .bashrc
 
     - name: Clone Master Mythra Web Repo.
       become: no
       git:
-        depth: 1
         dest: "{{ mythra_web_path }}"
         repo: https://github.com/deven96/mythra.git
         force: yes
-
-    - name: Build Code using Cargo.
+        
+    - name: Get latest tag
       shell:
         chdir: "{{ mythra_web_path }}"
         cmd: |
-          /root/.cargo/bin/cargo build
+           git tag | tail -n 1
+      register: latest_tag
 
-    - name: Start ChromeDriver and app
+    - name: Show Latest Tag
+      debug:
+        msg: "{{ latest_tag }}"
+
+    - name: Download latest tag
+      get_url: 
+        url: "{{ 'https://github.com/deven96/mythra/releases/download/{}/mythra-ubuntu-18.04-{}'.format(latest_tag.stdout, latest_tag.stdout) }}"
+        dest: "{{ '{}/mythra'.format(mythra_web_path) }}"
+        mode: "0755"
+        force: yes
+
+    - name: Kill existing processes
       shell:
-        chdir: "{{ mythra_web_path }}"
         cmd: |
-          lsof -ti tcp:"{{ mythra_web_port}}" | xargs kill -9
-          lsof -ti tcp:4444 | xargs kill -9
+          sudo lsof -ti tcp:{{ mythra_web_port }} | sudo xargs kill -9 > /dev/null 2&>1
+          sudo lsof -ti tcp:4444 | sudo xargs kill -9 > /dev/null 2&>1
+    
+    - name: Start ChromeDriver
+      shell:
+        cmd: |
           chromedriver --port=4444 --log-level=DEBUG &
-          ./target/debug/mythra api --port "{{ mythra_web_port }}" --verbose debug &
+      async: 45
+      poll: 0
+
+    - name: Start Mythra app
+      shell:
+        chdir: "{{ mythra_web_path }}"
+        cmd: |
+          ./mythra api --port "{{ mythra_web_port }}" --verbose debug &
+      async: 45
+      poll: 0
 
     - name: Install Nginx.
       include_role:
@@ -63,7 +79,6 @@
           - listen: "80"
             server_name: "_"
             state: "present"
-            return: "301 https://gophie.cam$request_uri"
             template: "{{ nginx_vhost_template }}"
             filename: "mythra.cam.80.conf"
             extra_parameters: |

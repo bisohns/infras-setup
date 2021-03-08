@@ -1,8 +1,0 @@
----
-
-- name: "Rust | Install dependencies"
-  yum:
-    name:
-      - curl
-      - gcc
-    state: present
