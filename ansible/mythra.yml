@@ -3,7 +3,7 @@
   become: yes
 
   vars:
-    mythra_web_path: "/home/gcp/mythra"
+    mythra_path: "/opt/mythra"
     mythra_web_port: 9000
 
   pre_tasks:
@@ -17,70 +17,84 @@
 
   tasks:
     - name: Install ChromeDriver
+      tags: chromedriver
       include_role:
         name: chromedriver
 
     - name: Install Headless Chrome
+      tags: chromedriver
       include_role:
         name: chrome
 
-
-    - name: Clone Master Mythra Web Repo.
-      become: no
-      git:
-        dest: "{{ mythra_web_path }}"
-        repo: https://github.com/deven96/mythra.git
-        force: yes
-        
     - name: Get latest tag
-      shell:
-        chdir: "{{ mythra_web_path }}"
-        cmd: |
-           git tag | tail -n 1
-      register: latest_tag
+      tags: mythra
+      uri:
+        url: https://api.github.com/repos/deven96/mythra/releases/latest
+        method: GET
+        return_content: yes
+        status_code: 200
+        body_format: json
+      register: mythra_latest_release
+
+    - name: Set Latest Release
+      tags: mythra
+      run_once: true
+      set_fact:
+        latest_tag: "{{ mythra_latest_release.json.tag_name }}"
 
     - name: Show Latest Tag
+      tags: mythra
       debug:
         msg: "{{ latest_tag }}"
 
     - name: Download latest tag
-      get_url: 
-        url: "{{ 'https://github.com/deven96/mythra/releases/download/{}/mythra-ubuntu-18.04-{}'.format(latest_tag.stdout, latest_tag.stdout) }}"
-        dest: "{{ '{}/mythra'.format(mythra_web_path) }}"
+      tags: mythra
+      get_url:
+        url: "{{ 'https://github.com/deven96/mythra/releases/download/{}/mythra-ubuntu-18.04-{}'.format(latest_tag, latest_tag) }}"
+        dest: "{{ mythra_path }}"
         mode: "0755"
         force: yes
+      notify:
+        - Restart mythra
 
-    - name: Kill existing processes
-      shell:
-        cmd: |
-          sudo lsof -ti tcp:{{ mythra_web_port }} | sudo xargs kill -9 > /dev/null 2&>1
-          sudo lsof -ti tcp:4444 | sudo xargs kill -9 > /dev/null 2&>1
-    
-    - name: Start ChromeDriver
-      shell:
-        cmd: |
-          chromedriver --port=4444 --log-level=DEBUG &
-      async: 45
-      poll: 0
+    - name: Create Chrome Driver service file
+      tags: chromedriver
+      ansible.builtin.template:
+        src: templates/chromedriver.service.j2
+        dest: /etc/systemd/system/chromedriver.service
+      notify:
+        - Start chromedriver
 
-    - name: Start Mythra app
-      shell:
-        chdir: "{{ mythra_web_path }}"
-        cmd: |
-          ./mythra api --port "{{ mythra_web_port }}" --verbose debug > /tmp/mythra.log &
-      async: 45
-      poll: 0
+    - name: Create Mythra service file
+      tags: mythra
+      ansible.builtin.template:
+        src: templates/mythra.service.j2
+        dest: /etc/systemd/system/mythra.service
+      notify:
+        - Start mythra
 
-    - name: Install Nginx.
-      include_role:
-        name: geerlingguy.nginx
+  roles:
+    - name:  geerlingguy.certbot
+      tags: certbot
+      vars:
+        certbot_auto_renew_user: "gcp"
+        certbot_admin_email: gophiemythra@gmail.com
+        certbot_create_if_missing: true
+        certbot_auto_renew_minute: "20"
+        certbot_auto_renew_hour: "5"
+        certbot_certs:
+          - domains:
+            - mythra.gophie.cam
+
+    - name: geerlingguy.nginx
+      tags: nginx
       vars:
         nginx_vhosts:
           - listen: "443 ssl http2"
             server_name: "mythra.gophie.cam"
             state: "present"
             template: "{{ nginx_vhost_template }}"
-            filename: "mythra.cam.80.conf"
+            filename: "mythra.cam.conf"
             extra_parameters: |
               ssl_certificate     /etc/letsencrypt/live/mythra.gophie.cam/fullchain.pem;
               ssl_certificate_key /etc/letsencrypt/live/mythra.gophie.cam/privkey.pem;
@@ -103,3 +117,20 @@
             server_name: "mythra.gophie.cam"
             return: "301 https://mythra.gophie.cam$request_uri"
             filename: "mythra.cam.80.conf"
+  handlers:
+    - name: Start mythra
+      systemd:
+        state: started
+        name: mythra
+        daemon_reload: yes
+
+    - name: Restart mythra
+      systemd:
+        state: restarted
+        name: mythra
+
+    - name: Start chromedriver
+      systemd:
+        state: started
+        name: chromedriver
+        daemon_reload: yes

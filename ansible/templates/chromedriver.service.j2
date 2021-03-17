@@ -1,0 +1,11 @@
+[Unit]
+Description= Chrome driver
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+ExecStart=/usr/local/bin/chromedriver --port=4444 --log-level=DEBUG
+
+[Install]
+WantedBy=multi-user.target

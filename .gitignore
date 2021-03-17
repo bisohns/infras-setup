@@ -35,3 +35,5 @@ override.tf.json
 *.pem
 
 .ansible.zip
+
+sa.json

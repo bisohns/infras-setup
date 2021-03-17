@@ -1,0 +1,11 @@
+[Unit]
+Description= Mythra App
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+ExecStart={{ mythra_path }} api --port {{ mythra_web_port }} --verbose debug
+
+[Install]
+WantedBy=multi-user.target

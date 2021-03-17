@@ -2,14 +2,14 @@ locals {
   common_tags = {
     Environment = "production"
     Project     = var.project
-    ManagedBy = "Terraform"
+    ManagedBy   = "Terraform"
   }
 }
 
 
 module "remote_state_locking" {
-  source   = "../modules/terraform-aws-remote-state"
-  use_lock = false
+  source      = "../modules/terraform-aws-remote-state"
+  use_lock    = false
   name_prefix = "gophie-terraform-state"
 }
 
@@ -20,7 +20,8 @@ resource "tls_private_key" "this" {
 
 
 module "key_pair" {
-  source = "terraform-aws-modules/key-pair/aws"
+  source  = "terraform-aws-modules/key-pair/aws"
+  version = "~> 0.6.0"
 
   public_key      = tls_private_key.this.public_key_openssh
   key_name_prefix = var.project
@@ -37,7 +38,8 @@ resource "local_file" "private_key" {
 
 // Gophie Web Security group
 module "web_service_sg" {
-  source = "terraform-aws-modules/security-group/aws"
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 3.18.0"
 
   name        = "gophie-web"
   description = "Security group for Gophie Web"
@@ -90,7 +92,7 @@ module "ec2" {
 #}
 
 
-resource null_resource "config-frontend-server-ansible" {
+resource "null_resource" "config-frontend-server-ansible" {
   triggers = {
     "src_hash" = data.archive_file.ansible_dir.output_sha # track changes in the ansible dir
   }

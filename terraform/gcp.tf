@@ -1,6 +1,6 @@
 // Mythra IP Address
 resource "google_compute_address" "static" {
-  name   = "${var.mythra_project}-ipv4-address"
+  name = "${var.mythra_project}-ipv4-address"
 }
 
 // Mythra Compute Engine Instance
@@ -8,7 +8,7 @@ resource "google_compute_instance" "vm_instance" {
   count        = 1
   name         = "${var.mythra_project}-ce"
   machine_type = "f1-micro"
-  
+
   tags = ["http-server", "https-server"]
 
   boot_disk {
@@ -30,17 +30,17 @@ resource "google_compute_instance" "vm_instance" {
 }
 
 resource "google_compute_firewall" "default" {
-  name    = "test-firewall"
+  name    = "allow-http-and-https"
   network = "default"
 
   allow {
     protocol = "tcp"
-    ports    = ["80","443"]
+    ports    = ["80", "443"]
   }
 
 }
 
-resource null_resource "config-mythra-server-ansible" {
+resource "null_resource" "config-mythra-server-ansible" {
   triggers = {
     "src_hash" = data.archive_file.ansible_dir.output_sha # track changes in the ansible dir
   }
