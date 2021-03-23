@@ -73,6 +73,13 @@
       notify:
         - Start mythra
 
+    - name: Create Mythra cache busting cron
+      ansible.builtin.cron:
+        name: "mythra remove cache every 30 minutes"
+        minute: "*/30"
+        job: "{{ mythra_path }} clear-cache"
+        user: "gcp"
+
   roles:
     - name:  geerlingguy.certbot
       tags: certbot
