@@ -77,7 +77,7 @@
       ansible.builtin.cron:
         name: "mythra remove cache every 30 minutes"
         minute: "*/30"
-        job: "{{ mythra_path }} clear-cache"
+        job: "sudo {{ mythra_path }} clear-cache >> /tmp/mythra-cache-clear.log 2>&1"
         user: "gcp"
 
   roles:
