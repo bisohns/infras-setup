@@ -1,8 +1,0 @@
-default:
-  tags:
-    - docker
-
-include:
-  - project: 'deimosdev/tooling/ci-templates'
-    ref: 'master'
-    file: 'terraform.yml'

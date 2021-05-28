@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket = "gophie-terraform-state-eb41fd9ee37117346e4b"
+    bucket = "gophie-terraform-state-c3ba89a7acadc0725dfc"
     region = "eu-west-2"
     key = "global/terrform.tfstate"
 

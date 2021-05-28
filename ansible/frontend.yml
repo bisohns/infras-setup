@@ -3,6 +3,7 @@
   become: yes
 
   vars:
+    gophie_host: "gophie.cam"
     gophie_web_path: "/home/ubuntu/gophie"
     gophie_web_port: 3000
     nodejs_install_npm_user: ubuntu
@@ -28,7 +29,7 @@
         nodejs_version: "14.x"
         nodejs_npm_global_packages:
           - yarn
-    
+
     - name: Create Yarn symbolic link
       file:
         src: "{{npm_config_prefix}}/bin/yarn"
@@ -66,19 +67,31 @@
            PORT: "{{ gophie_web_port }}"
          pm2_service_name: pm2-root
 
+    - name:  Install Certbot.
+      include_role:
+        name: geerlingguy.certbot
+      vars:
+        certbot_auto_renew_user: "ubuntu"
+        certbot_create_if_missing: true
+        certbot_auto_renew_minute: "20"
+        certbot_auto_renew_hour: "5"
+        certbot_certs:
+          - domains:
+            - "{{ gophie_host }}"
+
     - name: Install Nginx.
       include_role:
         name: geerlingguy.nginx
       vars:
         nginx_vhosts:
           - listen: "443 ssl http2"
-            server_name: "gophie.cam"
+            server_name: "{{ gophie_host }}"
             state: "present"
             template: "{{ nginx_vhost_template }}"
             filename: "gophie.cam.conf"
             extra_parameters: |
-              ssl_certificate     /etc/letsencrypt/live/gophie.cam/fullchain.pem;
-              ssl_certificate_key /etc/letsencrypt/live/gophie.cam/privkey.pem;
+              ssl_certificate     "/etc/letsencrypt/live/{{ gophie_host }}/fullchain.pem";
+              ssl_certificate_key "/etc/letsencrypt/live/{{ gophie_host }}/privkey.pem";
               ssl_protocols       tlsv1.1 tlsv1.2;
               location / {
                 proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
@@ -95,19 +108,6 @@
               }
 
           - listen: "80"
-            server_name: "gophie.cam www.gophie.cam"
-            return: "301 https://gophie.cam$request_uri"
+            server_name: "{{ gophie_host }} www.{{ gophie_host }}"
+            return: "301 https://{{ gophie_host }}$request_uri"
             filename: "gophie.cam.80.conf"
-
-
-    - name:  Install Certbot.
-      include_role:
-        name: geerlingguy.certbot
-      vars:
-        certbot_auto_renew_user: "ubuntu"
-        certbot_create_if_missing: true
-        certbot_auto_renew_minute: "20"
-        certbot_auto_renew_hour: "5"
-        certbot_certs:
-          - domains:
-            - gophie.cam
