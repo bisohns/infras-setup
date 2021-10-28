@@ -81,18 +81,6 @@
         user: "gcp"
 
   roles:
-    - name:  geerlingguy.certbot
-      tags: certbot
-      vars:
-        certbot_auto_renew_user: "gcp"
-        certbot_admin_email: gophiemythra@gmail.com
-        certbot_create_if_missing: true
-        certbot_auto_renew_minute: "20"
-        certbot_auto_renew_hour: "5"
-        certbot_certs:
-          - domains:
-            - mythra.gophie.cam
-
     - name: geerlingguy.nginx
       tags: nginx
       vars:
@@ -124,6 +112,21 @@
             server_name: "mythra.gophie.cam"
             return: "301 https://mythra.gophie.cam$request_uri"
             filename: "mythra.cam.80.conf"
+
+    - name:  certbot
+      tags: certbot
+      vars:
+        certbot_auto_renew_user: "gcp"
+        certbot_auto_renew_options: "--quiet --no-self-upgrade --nginx"
+        certbot_admin_email: gophiemythra@gmail.com
+        certbot_create_if_missing: true
+        certbot_auto_renew_minute: "20"
+        certbot_auto_renew_hour: "5"
+        certbot_certs:
+          - domains:
+            - mythra.gophie.cam
+        certbot_create_method: nginx
+
   handlers:
     - name: Start mythra
       systemd:

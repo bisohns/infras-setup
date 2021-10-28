@@ -1,0 +1,3 @@
+---
+certbot_nginx_plugin: python-certbot-nginx
+certbot_package: letsencrypt
