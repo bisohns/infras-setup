@@ -145,7 +145,7 @@ module "db" {
 
   identifier           = "${var.project}-db"
   engine               = "postgres"
-  engine_version       = "12.5"
+  engine_version       = "12.7"
   family               = "postgres12" # DB parameter gr
   port                 = 5432
   major_engine_version = "12" # DB option group
@@ -160,7 +160,7 @@ module "db" {
 
   username = "postgres"
   password = random_password.db_password.result
-  name     = local.db_name
+  name     = "" # local.db_name
 
   maintenance_window = "Mon:00:00-Mon:03:00"
   backup_window      = "03:00-06:00"
@@ -173,7 +173,7 @@ module "db" {
   tags = local.common_tags
 
   # Database Deletion Protection
-  deletion_protection = false
+  deletion_protection = true
 
   depends_on = [module.database_service_sg]
 }

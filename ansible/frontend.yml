@@ -72,12 +72,14 @@
         name: geerlingguy.certbot
       vars:
         certbot_auto_renew_user: "ubuntu"
+        certbot_auto_renew_options: "--quiet --no-self-upgrade --nginx"
         certbot_create_if_missing: true
         certbot_auto_renew_minute: "20"
         certbot_auto_renew_hour: "5"
         certbot_certs:
           - domains:
             - "{{ gophie_host }}"
+        certbot_create_method: nginx
 
     - name: Install Nginx.
       include_role:

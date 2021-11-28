@@ -21,7 +21,7 @@ resource "heroku_app" "app" {
   buildpacks = var.buildpacks
 }
 
-resource "heroku_app_config_association" "foobar" {
+resource "heroku_app_config_association" "app" {
   app_id = local.app_id
 
   vars           = heroku_config.app.vars
