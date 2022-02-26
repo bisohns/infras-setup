@@ -18,6 +18,7 @@ Ansible And Terraform scripts for the Gophie Infrastructure
 
 - Ansible
 ```bash
+   $ pip install -r requirements.txt
    $ ansible-galaxy install -r ./ansible/requirements.yml
 ```
 

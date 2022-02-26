@@ -1,5 +1,0 @@
----
-- name: Install nginx plugin
-  package:
-    name: "{{ certbot_nginx_plugin }}"
-    state: present

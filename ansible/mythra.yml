@@ -80,10 +80,12 @@
         job: "sudo {{ mythra_path }} clear-cache >> /tmp/mythra-cache-clear.log 2>&1"
         user: "gcp"
 
-  roles:
-    - name: geerlingguy.nginx
+    - name: Install Nginx.
+      include_role: 
+        name: geerlingguy.nginx
       tags: nginx
       vars:
+        nginx_service_state: stopped
         nginx_vhosts:
           - listen: "443 ssl http2"
             server_name: "mythra.gophie.cam"
@@ -113,19 +115,29 @@
             return: "301 https://mythra.gophie.cam$request_uri"
             filename: "mythra.cam.80.conf"
 
-    - name:  certbot
+    - name: Certbot
       tags: certbot
-      vars:
-        certbot_auto_renew_user: "gcp"
-        certbot_auto_renew_options: "--quiet --no-self-upgrade --nginx"
-        certbot_admin_email: gophiemythra@gmail.com
-        certbot_create_if_missing: true
-        certbot_auto_renew_minute: "20"
-        certbot_auto_renew_hour: "5"
-        certbot_certs:
-          - domains:
-            - mythra.gophie.cam
-        certbot_create_method: nginx
+      block:
+      - name: Install nginx certbot package
+        apt:
+          state: present
+          pkg:
+            - python3-certbot-nginx
+      - include_role: 
+          name: geerlingguy.certbot
+          apply:
+            tags:
+              - certbot
+        vars:
+          certbot_auto_renew_user: "root"
+          certbot_auto_renew_options: "--quiet --no-self-upgrade --nginx"
+          certbot_admin_email: gophiemythra@gmail.com
+          certbot_create_if_missing: true
+          certbot_certs:
+            - domains:
+              - mythra.gophie.cam
+      notify:
+        - Restart nginx
 
   handlers:
     - name: Start mythra
@@ -144,3 +156,8 @@
         state: started
         name: chromedriver
         daemon_reload: yes
+
+    - name: Restart nginx
+      systemd:
+        state: started
+        name: nginx

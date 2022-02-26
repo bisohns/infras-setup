@@ -29,6 +29,8 @@
         nodejs_version: "14.x"
         nodejs_npm_global_packages:
           - yarn
+      tags:
+        - nodejs
 
     - name: Create Yarn symbolic link
       file:
@@ -37,6 +39,8 @@
         owner: "{{ nodejs_install_npm_user }}"
         group: "{{ nodejs_install_npm_user }}"
         state: link
+      tags:
+        - nodejs
 
     - name: Clone Master Gophie Web Repo.
       become: no
@@ -45,6 +49,8 @@
         dest: "{{ gophie_web_path }}"
         repo: https://github.com/go-phie/gophie-web.git
         force: yes
+      tags:
+        - configuration
 
     - name: Build Code using Yarn.
       become: no
@@ -52,6 +58,8 @@
         chdir: "{{ gophie_web_path }}"
         cmd: |
           /usr/bin/yarn
+      tags:
+        - configuration
 
     - name: Setup pm2 and start app.
       include_role:
@@ -66,24 +74,42 @@
            NODE_ENV: production
            PORT: "{{ gophie_web_port }}"
          pm2_service_name: pm2-root
+      tags:
+        - pm2
+        - webserver
 
-    - name:  Install Certbot.
-      include_role:
-        name: geerlingguy.certbot
-      vars:
-        certbot_auto_renew_user: "ubuntu"
-        certbot_auto_renew_options: "--quiet --no-self-upgrade --nginx"
-        certbot_create_if_missing: true
-        certbot_auto_renew_minute: "20"
-        certbot_auto_renew_hour: "5"
-        certbot_certs:
-          - domains:
-            - "{{ gophie_host }}"
-        certbot_create_method: nginx
+    - block:
+      - name: Install nginx certbot package
+        apt:
+          state: present
+          pkg:
+            - python3-certbot-nginx
+
+      - name:  Install Certbot.
+        include_role:
+          name: geerlingguy.certbot
+          apply:
+            tags:
+            - certbot
+        vars:
+          certbot_auto_renew_options: "--quiet --no-self-upgrade --nginx"
+          certbot_admin_email: gophiemythra@gmail.com
+          certbot_auto_renew_user: root
+          certbot_create_if_missing: true
+          certbot_certs:
+            - domains:
+              - "{{ gophie_host }}"
+          certbot_create_method: nginx
+      tags:
+      - certbot
+      become: yes
 
     - name: Install Nginx.
       include_role:
         name: geerlingguy.nginx
+      tags:
+        - nginx
+        - webserver
       vars:
         nginx_vhosts:
           - listen: "443 ssl http2"
