@@ -1,0 +1,197 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: bisohns-test.k8s.local
+spec:
+  api:
+    dns: {}
+#    loadBalancer:
+#      class: Network
+#      type: Public
+  authorization:
+    rbac: {}
+  authentication:
+    aws:
+      backendMode: CRD
+      clusterID: bisohns-test.k8s.local
+      identityMappings:
+      - arn: arn:aws:iam::126759313825:user/root
+        username: root-admin
+        groups:
+        - system:masters
+
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://bisohns-k8s-local-state-store/bisohns-test.k8s.local
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2a
+      name: a
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2b
+      name: b
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2c
+      name: c
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2a
+      name: a
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2b
+      name: b
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2c
+      name: c
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+    useServiceAccountExternalPermissions: true
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.25.5
+  masterPublicName: api.bisohns-test.k8s.local
+  networkCIDR: 172.20.0.0/16
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  serviceAccountIssuerDiscovery:
+    discoveryStore: s3://bisohns-k8s-local-oidc-store/bisohns-test.k8s.local/discovery/bisohns-test.k8s.local
+    enableAWSOIDCProvider: true
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: eu-west-2a
+    type: Public
+    zone: eu-west-2a
+  - cidr: 172.20.64.0/19
+    name: eu-west-2b
+    type: Public
+    zone: eu-west-2b
+  - cidr: 172.20.96.0/19
+    name: eu-west-2c
+    type: Public
+    zone: eu-west-2c
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+  # Addons: https://kops.sigs.k8s.io/addons/
+  awsLoadBalancerController:
+    enabled: true
+  certManager:
+    enabled: true
+#    nameservers:
+#      - 1.1.1.1
+#      - 8.8.8.8
+  nodeTerminationHandler:
+    enabled: true
+    enableRebalanceMonitoring: true
+    enableSQSTerminationDraining: true
+    managedASGTag: "aws-node-termination-handler/managed"
+  nodeProblemDetector:
+    enabled: true
+    memoryRequest: 32Mi
+    cpuRequest: 10m
+  podIdentityWebhook:
+    enabled: true
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisohns-test.k8s.local
+  name: master-eu-west-2a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.20"
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - eu-west-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisohns-test.k8s.local
+  name: master-eu-west-2b
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.20"
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - eu-west-2b
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisohns-test.k8s.local
+  name: master-eu-west-2c
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.20"
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - eu-west-2c
+
+---
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisohns-test.k8s.local
+  name: nodes-eu-west-2c
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20221206
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.20"
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - eu-west-2c
