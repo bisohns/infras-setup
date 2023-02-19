@@ -1,0 +1,25 @@
+# Addons: https://kops.sigs.k8s.io/addons/
+  awsLoadBalancerController:
+    enabled: true
+  certManager:
+    enabled: true
+  nodeTerminationHandler:
+    enabled: true
+    enableRebalanceMonitoring: true
+    enableSQSTerminationDraining: true
+    managedASGTag: "aws-node-termination-handler/managed"
+  nodeProblemDetector:
+    enabled: true
+    memoryRequest: 32Mi
+    cpuRequest: 10m
+  podIdentityWebhook:
+    enabled: true
+
+
+#removing taints from master nodes
+kubectl taint node master_node node-role.kubernetes.io/control-plane:NoSchedule-
+
+#installed inginx-ingress controller
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace

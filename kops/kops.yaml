@@ -1,0 +1,173 @@
+apiVersion: kops.k8s.io/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  name: bisons.k8s.local
+spec:
+  api:
+    loadBalancer:
+      class: Classic
+      type: Public
+  authorization:
+    rbac: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: s3://bisohns-k8s-local-state-store/bisons.k8s.local
+  etcdClusters:
+  - cpuRequest: 200m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2a
+      name: a
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2b
+      name: b
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2c
+      name: c
+    memoryRequest: 100Mi
+    name: main
+  - cpuRequest: 100m
+    etcdMembers:
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2a
+      name: a
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2b
+      name: b
+    - encryptedVolume: true
+      instanceGroup: master-eu-west-2c
+      name: c
+    memoryRequest: 100Mi
+    name: events
+  iam:
+    allowContainerRegistry: true
+    legacy: false
+    useServiceAccountExternalPermissions: true
+  kubelet:
+    anonymousAuth: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  - ::/0
+  kubernetesVersion: 1.25.6
+  masterPublicName: api.bisons.k8s.local
+  networkCIDR: 172.31.0.0/16
+  networkID: vpc-de3b14b6
+  networking:
+    kubenet: {}
+  nonMasqueradeCIDR: 100.64.0.0/10
+  serviceAccountIssuerDiscovery:
+    discoveryStore: s3://bisohns-k8s-local-oidc-store/bisons.k8s.local/discovery/bisons.k8s.local
+    enableAWSOIDCProvider: true
+  sshAccess:
+  - 0.0.0.0/0
+  - ::/0
+  subnets:
+  - cidr: 172.31.16.0/20
+    id: subnet-a3027fd9
+    name: eu-west-2a
+    type: Public
+    zone: eu-west-2a
+  - cidr: 172.31.32.0/20
+    id: subnet-822fafce
+    name: eu-west-2b
+    type: Public
+    zone: eu-west-2b
+  - cidr: 172.31.0.0/20
+    id: subnet-79f1c010
+    name: eu-west-2c
+    type: Public
+    zone: eu-west-2c
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisons.k8s.local
+  name: master-eu-west-2a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.02"
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - eu-west-2a
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisons.k8s.local
+  name: master-eu-west-2b
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.02"
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - eu-west-2b
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisons.k8s.local
+  name: master-eu-west-2c
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
+  instanceMetadata:
+    httpPutResponseHopLimit: 3
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.02"
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - eu-west-2c
+
+---
+
+apiVersion: kops.k8s.io/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: null
+  labels:
+    kops.k8s.io/cluster: bisons.k8s.local
+  name: nodes-eu-west-2a
+spec:
+  image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
+  instanceMetadata:
+    httpPutResponseHopLimit: 1
+    httpTokens: required
+  machineType: t3.medium
+  maxPrice: "0.02"
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - eu-west-2a
