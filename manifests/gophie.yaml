@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gophie
+  labels:
+    app: gophie 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gophie
+  template:
+    metadata:
+      labels:
+        app: gophie
+    spec:
+      containers:
+      - name: gophie 
+        image: bethelm/bisohns:gophie
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gophie-service 
+spec:
+  type: NodePort
+  selector:
+    app: gophie 
+  ports:
+  - port: 80 
+    targetPort: 3000
+
