@@ -17,9 +17,28 @@
 
 
 #removing taints from master nodes
-kubectl taint node master_node node-role.kubernetes.io/control-plane:NoSchedule-
+kubectl taint nodes --all=true node-role.kubernetes.io/control-plane:NoSchedule-
+
 
 #installed inginx-ingress controller
 helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --namespace ingress-nginx --create-namespace
+
+# replace default cni from kubenet to amazonvpc
+  networking:
+    amazonvpc:
+      env:
+      - name: WARM_IP_TARGET
+        value: "10"
+      - name: AWS_VPC_K8S_CNI_LOGLEVEL
+        value: debug
+
+#use spot instances by specifying max_price
+maxPrice: "0.02"
+
+# kill/drain worker node (set its max and min number to 0)
+
+# increase maximum number of pods that can be scheduled on a node
+kubelet:
+  maxPods: 50

@@ -2,17 +2,15 @@ apiVersion: kops.k8s.io/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: null
-  name: bisons.k8s.local
+  name: k8s.bisohns.com
 spec:
   api:
-    loadBalancer:
-      class: Classic
-      type: Public
+    dns: {}
   authorization:
     rbac: {}
   channel: stable
   cloudProvider: aws
-  configBase: s3://bisohns-k8s-local-state-store/bisons.k8s.local
+  configBase: s3://bisohns-k8s-local-state-store/k8s.bisohns.com
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
@@ -46,13 +44,13 @@ spec:
     useServiceAccountExternalPermissions: true
   kubelet:
     anonymousAuth: false
+    maxPods: 50
   kubernetesApiAccess:
   - 0.0.0.0/0
   - ::/0
   kubernetesVersion: 1.25.6
-  masterPublicName: api.bisons.k8s.local
-  networkCIDR: 172.31.0.0/16
-  networkID: vpc-de3b14b6
+  masterPublicName: api.k8s.bisohns.com
+  networkCIDR: 172.20.0.0/16
   networking:
     amazonvpc:
       env:
@@ -63,24 +61,21 @@ spec:
 
   nonMasqueradeCIDR: 100.64.0.0/10
   serviceAccountIssuerDiscovery:
-    discoveryStore: s3://bisohns-k8s-local-oidc-store/bisons.k8s.local/discovery/bisons.k8s.local
+    discoveryStore: s3://bisohns-k8s-local-oidc-store/k8s.bisohns.com/discovery/k8s.bisohns.com
     enableAWSOIDCProvider: true
   sshAccess:
   - 0.0.0.0/0
   - ::/0
   subnets:
-  - cidr: 172.31.16.0/20
-    id: subnet-a3027fd9
+  - cidr: 172.20.32.0/19
     name: eu-west-2a
     type: Public
     zone: eu-west-2a
-  - cidr: 172.31.32.0/20
-    id: subnet-822fafce
+  - cidr: 172.20.64.0/19
     name: eu-west-2b
     type: Public
     zone: eu-west-2b
-  - cidr: 172.31.0.0/20
-    id: subnet-79f1c010
+  - cidr: 172.20.96.0/19
     name: eu-west-2c
     type: Public
     zone: eu-west-2c
@@ -97,7 +92,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: null
   labels:
-    kops.k8s.io/cluster: bisons.k8s.local
+    kops.k8s.io/cluster: k8s.bisohns.com
   name: master-eu-west-2a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
@@ -119,7 +114,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: null
   labels:
-    kops.k8s.io/cluster: bisons.k8s.local
+    kops.k8s.io/cluster: k8s.bisohns.com
   name: master-eu-west-2b
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
@@ -141,7 +136,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: null
   labels:
-    kops.k8s.io/cluster: bisons.k8s.local
+    kops.k8s.io/cluster: k8s.bisohns.com
   name: master-eu-west-2c
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
@@ -163,7 +158,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: null
   labels:
-    kops.k8s.io/cluster: bisons.k8s.local
+    kops.k8s.io/cluster: k8s.bisohns.com
   name: nodes-eu-west-2a
 spec:
   image: 099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20230112
@@ -172,8 +167,8 @@ spec:
     httpTokens: required
   machineType: t3.medium
   maxPrice: "0.02"
-  maxSize: 1
-  minSize: 1
+  maxSize: 0
+  minSize: 0
   role: Node
   subnets:
   - eu-west-2a

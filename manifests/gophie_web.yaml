@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gophie-web
+  labels:
+    app: gophie-web 
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gophie-web
+  template:
+    metadata:
+      labels:
+        app: gophie-web
+    spec:
+      containers:
+      - name: gophie-web 
+        image: bethelm/bisohns:gophie-web
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gophie-web-service 
+spec:
+  type: ClusterIP
+  selector:
+    app: gophie-web 
+  ports:
+  - port: 80 
+    targetPort: 80

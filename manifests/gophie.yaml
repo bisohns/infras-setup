@@ -17,6 +17,9 @@ spec:
       containers:
       - name: gophie 
         image: bethelm/bisohns:gophie
+        envFrom:
+        - secretRef:
+            name: gophie-secret
         resources:
           limits:
             memory: "128Mi"
@@ -32,10 +35,9 @@ kind: Service
 metadata:
   name: gophie-service 
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: gophie 
   ports:
   - port: 80 
     targetPort: 3000
-

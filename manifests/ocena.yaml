@@ -14,6 +14,9 @@ spec:
       containers:
       - name: ocena
         image: bethelm/bisohns:ocena
+        envFrom:
+        - secretRef:
+            name: ocena-secret
         resources:
           limits:
             memory: "128Mi"
@@ -27,7 +30,7 @@ kind: Service
 metadata:
   name: ocena-service
 spec:
-  type: NodePort
+  type: ClusterIP 
   selector:
     app: ocena
   ports:

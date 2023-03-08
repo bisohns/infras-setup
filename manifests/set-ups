@@ -1,0 +1,4 @@
+#to set up environment variables for gophie(replace gophie.env with path to gophie .env file) :
+kubectl create secret generic gophie-secret --from-env-file=gophie.env
+#to set up environment variables for ocena(replace gophie.env with path to ocena .env file) :
+kubectl create secret generic ocena-secret --from-env-file=ocena.env
