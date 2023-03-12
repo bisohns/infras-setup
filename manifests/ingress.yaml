@@ -17,3 +17,13 @@ spec:
             name:  gophie-service
             port: 
               number: 80
+  - host: oc.gophie.cam
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name:  ocena-service
+            port: 
+              number: 80

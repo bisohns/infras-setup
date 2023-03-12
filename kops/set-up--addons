@@ -18,6 +18,7 @@
 
 #removing taints from master nodes
 kubectl taint nodes --all=true node-role.kubernetes.io/control-plane:NoSchedule-
+kubectl taint nodes --all=true node.kubernetes.io/unschedulable:NoSchedule-
 
 
 #installed inginx-ingress controller
