@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gophie-ingress
+  labels:
+    name: gophie-ingress 
+  namespace: gophie 
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+     - api.gophie.cam
+    secretName: gophie-tls
+  rules:
+  - host: api.gophie.cam
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name:  gophie-service
+            port: 
+              number: 80

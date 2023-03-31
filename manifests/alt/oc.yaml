@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oce
+  namespace: gophie
+spec:
+  selector:
+    matchLabels:
+      app: oce
+  template:
+    metadata:
+      labels:
+        app: oce
+    spec:
+      containers:
+      - name: oce
+        image: bethelm/bisohns:ocenaV2
+        envFrom:
+        - secretRef:
+            name: ocena-alt-secret
+        # resources:
+        #   limits:
+        #     memory: "128Mi"
+        #     cpu: "500m"
+        ports:
+        - containerPort: 8000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oce-service
+  namespace: gophie 
+spec:
+  type: ClusterIP 
+  selector:
+    app: oce
+  ports:
+  - port: 80
+    targetPort: 8000

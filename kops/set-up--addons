@@ -5,7 +5,7 @@
     enabled: true
   nodeTerminationHandler:
     enabled: true
-    enableRebalanceMonitoring: true
+    #enableRebalanceMonitoring: true
     enableSQSTerminationDraining: true
     managedASGTag: "aws-node-termination-handler/managed"
   nodeProblemDetector:
@@ -43,3 +43,10 @@ maxPrice: "0.02"
 # increase maximum number of pods that can be scheduled on a node
 kubelet:
   maxPods: 50
+
+
+# add label to node in order to be selected or added in targetgroup binding
+ kubectl label nodes --all addToTargetGroup=yes
+
+#errors
+error populating cluster spec: spec.cloudProvider.aws.nodeTerminationHandler.enableRebalanceMonitoring: Forbidden: rebalance even ts can only drain in Queue Processor mode

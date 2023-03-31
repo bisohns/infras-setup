@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ocena-ingress
+  labels:
+    name: ocena-ingress 
+  namespace: gophie
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - ocena.gophie.cam
+    secretName: gophie-ocena-tls
+  rules:
+  - host: ocena.gophie.cam
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name:  ocena-service
+            port: 
+              number: 80
