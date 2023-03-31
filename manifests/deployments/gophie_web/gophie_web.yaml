@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: gophie-web 
-        image: bethelm/bisohns:gophie-webV2
+        image: ghcr.io/go-phie/gophie-web:v2
         resources:
           limits:
             memory: "128Mi"

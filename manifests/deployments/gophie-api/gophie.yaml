@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: gophie 
-        image: bethelm/bisohns:gophieV1
+        image: ghcr.io/go-phie/gophie:v2
         envFrom:
         - secretRef:
             name: gophie-secret
