@@ -98,7 +98,7 @@ spec:
     httpPutResponseHopLimit: 3
     httpTokens: required
   machineType: t3.medium
-  maxPrice: "0.02"
+  maxPrice: "0.03"
   maxSize: 1
   minSize: 1
   role: Master
@@ -120,7 +120,7 @@ spec:
     httpPutResponseHopLimit: 3
     httpTokens: required
   machineType: t3.medium
-  maxPrice: "0.02"
+  maxPrice: "0.03"
   maxSize: 1
   minSize: 1
   role: Master
@@ -142,7 +142,7 @@ spec:
     httpPutResponseHopLimit: 3
     httpTokens: required
   machineType: t3.medium
-  maxPrice: "0.02"
+  maxPrice: "0.03"
   maxSize: 1
   minSize: 1
   role: Master
@@ -164,7 +164,7 @@ spec:
     httpPutResponseHopLimit: 1
     httpTokens: required
   machineType: t3.medium
-  maxPrice: "0.02"
+  maxPrice: "0.03"
   maxSize: 1
   minSize: 1
   role: Node
@@ -186,7 +186,7 @@ spec:
     httpPutResponseHopLimit: 1
     httpTokens: required
   machineType: t3.medium
-  maxPrice: "0.02"
+  maxPrice: "0.03"
   maxSize: 1
   minSize: 1
   role: Node
@@ -208,7 +208,7 @@ spec:
     httpPutResponseHopLimit: 1
     httpTokens: required
   machineType: t3.medium
-  maxPrice: "0.02"
+  maxPrice: "0.03"
   maxSize: 0
   minSize: 0
   role: Node

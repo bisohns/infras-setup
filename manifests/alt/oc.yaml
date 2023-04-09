@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: oce
-        image: bethelm/bisohns:ocenaV2
+        image: ghcr.io/go-phie/ocena:v2 
         envFrom:
         - secretRef:
             name: ocena-alt-secret

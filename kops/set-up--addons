@@ -50,3 +50,9 @@ kubelet:
 
 #errors
 error populating cluster spec: spec.cloudProvider.aws.nodeTerminationHandler.enableRebalanceMonitoring: Forbidden: rebalance even ts can only drain in Queue Processor mode
+
+
+#ssh key to access nodes
+kops create sshpublickey --name <clustername> -i ~/.ssh/newkey.pub
+kops update cluster <clustername> 
+kops rolling-update cluster --name <clustername> 

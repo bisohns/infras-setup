@@ -7,6 +7,7 @@ metadata:
   namespace: gophie 
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    #nginx.ingress.kubernetes.io/rewrite-target: https://web.gophie.cam$1
 spec:
   ingressClassName: nginx
   tls:
