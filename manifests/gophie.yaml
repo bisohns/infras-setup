@@ -2,8 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gophie
+  namespace: gophie
   labels:
-    app: gophie 
+    app: gophie
 spec:
   replicas: 1
   selector:
@@ -15,27 +16,21 @@ spec:
         app: gophie
     spec:
       containers:
-      - name: gophie 
-        image: bethelm/bisohns:gophie
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+      - name: gophie
+        image: gcr.io/khidom/gophie:latest
         ports:
         - containerPort: 3000
-
-
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: gophie-service 
+  name: gophie
+  namespace: gophie
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
-    app: gophie 
+    app: gophie
   ports:
-  - port: 80 
+  - port: 80
     targetPort: 3000
-

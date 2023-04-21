@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ocena
+  namespace: gophie
 spec:
   selector:
     matchLabels:
@@ -13,11 +14,14 @@ spec:
     spec:
       containers:
       - name: ocena
-        image: bethelm/bisohns:ocena
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+        image: gcr.io/khidom/ocena
+        envFrom:
+          - configMapRef:
+              name: ocena
+#        resources:
+#          limits:
+#            memory: "128Mi"
+#            cpu: "500m"
         ports:
         - containerPort: 8000
 
@@ -25,12 +29,38 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ocena-service
+  name: ocena
+  namespace: gophie
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: ocena
   ports:
   - port: 80
     targetPort: 8000
 
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+  name: ocena
+  namespace: gophie
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: ocena.gophie.cam
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: ocena
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - ocena.gophie.com
+    secretName: ocena-gophie-com-tls
