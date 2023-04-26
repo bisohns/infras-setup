@@ -16,14 +16,35 @@ releases:
       app: ingress-nginx
     values:
       - controller:
+          replicaCount: 2
           ingressClassResource:
             default: true
           service:
             externalTrafficPolicy: Local
           config:
+            block-cidrs: 82.167.87.2/32,216.151.191.68/32,122.107.62.196/32,49.186.57.244/32,216.131.84.93/32,223.205.217.146/32,173.195.15.175/32,175.35.27.231/32,216.151.180.45/32,49.187.84.95/32,216.131.116.46/32,64.145.79.39/32,115.164.182.140
             http-snippet: |-
                 proxy_cache_path /tmp/cache levels=1:2 keys_zone=app_cache:50m max_size=1g inactive=1d use_temp_path=off;
-
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                      - ingress-nginx
+                    - key: app.kubernetes.io/instance
+                      operator: In
+                      values:
+                      - ingress-nginx
+                    - key: app.kubernetes.io/component
+                      operator: In
+                      values:
+                      - controller
+                  topologyKey: kubernetes.io/hostname
 
   - name: cert-manager
     namespace: cert-manager
