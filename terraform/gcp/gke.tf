@@ -17,6 +17,10 @@ resource "google_container_cluster" "primary" {
   network         = google_compute_network.khidom_01.id
   subnetwork      = google_compute_subnetwork.gke.id
 
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
 }
 
 resource "google_service_account" "node_pool" {
@@ -42,6 +46,9 @@ resource "google_container_node_pool" "default" {
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+    workload_metadata {
+      mode = "GKE_METADATA"
+    }
   }
   lifecycle {
     ignore_changes = [initial_node_count]

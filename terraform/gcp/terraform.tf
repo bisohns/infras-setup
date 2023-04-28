@@ -17,11 +17,11 @@ terraform {
 }
 
 provider "google" {
-  project = "khidom"
+  project = var.project_id
   region  = "us-west1"
 }
 
 provider "google-beta" {
-  project = "khidom"
+  project = var.project_id
   region  = "us-west1"
 }
